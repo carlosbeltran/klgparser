@@ -49,7 +49,7 @@ def removeFolder(folder):
 
 def klgtopng():
     
-    f = open("2017-08-01.00.klg", "rb")
+    f = open("outklg.klg", "rb")
 
     # extract number of frames (32 bits)
     byte = f.read(4)
@@ -162,6 +162,6 @@ if __name__ == '__main__':
     checkCreateOutputFolder("klg2png_output");
     checkCreateOutputFolder("klg2png_output/depth_aug/");
     checkCreateOutputFolder("klg2png_output/rgb_aug/");
-    klgtopng()
     extractFrames()
+    klgtopng()
     unittest.main()
