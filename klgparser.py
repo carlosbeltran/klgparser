@@ -23,13 +23,21 @@ import shutil
 
 class TestKLGParser(unittest.TestCase):
     def testDepthOutput(self):
-        file1 = "klg2png_output/depth_aug/depth_aug0.png"
-        file2 = "output_test/depth_aug0.png"
-        self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
+        outputfolder = "klg2png_output/depth_aug/" 
+        testfolder   = "output_test/"
+        for indx in range(10):
+            filename = "depth_aug" + str(indx) +".png"
+            file1 = outputfolder + filename
+            file2 = testfolder   + filename
+            self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
     def testRGBOutput(self):
-        file1 = "klg2png_output/rgb_aug/rgb_aug0.png"
-        file2 = "output_test/rgb_aug0.png"
-        self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
+        outputfolder = "klg2png_output/rgb_aug/"
+        testfolder   = "output_test/"
+        for indx in range(10):
+            filename = "rgb_aug" + str(indx) + ".png"
+            file1 = outputfolder + filename
+            file2 = testfolder   + filename
+            self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
 
 def checkCreateOutputFolder(folder):
     if not os.path.exists(folder):
