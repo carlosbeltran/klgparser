@@ -1,0 +1,22 @@
+The structure of the klg file like following:
+
+<number of frames encoded as 32 bit int>
+----------------------------------------------------------------------------------
+<timestamp encoded as 64 bit int>
+<depthsize encoded as 32 bit int>
+<imagesize (rgb) encoded as 32 bit int>
+<depth buffer zlib compressed in the following depthsize number of bytes>
+<rgb buffer jpeg compressed in the following imagesize number of bytes>
+-----------------------------------------------------------------------------------------------
+
+The parts between dashes repeated number of frame times. opencv library with
+python is easy choice uncompressing images. Be careful about little little
+endian and big endians. I installed (to Omron pc ) and used bless (there are
+some other softwares too) for reading binary klg file to understand if the
+numbers are encoded as little or big endians. As far as i remember for example
+number of frames was encoded as little endians . So when you are reading data
+from binary file if the numbers does not make sense at first glance it is
+because of this. Depth images  zlib compressed unsigned 16 bit images. The
+color images are jpeg compressed uint8 bits typical rgb images.  While
+uncompressing images the  color image (most probably will be) can be in BGR
+form so it can be transformed easily to RGB using opencv library.
