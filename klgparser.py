@@ -19,8 +19,18 @@ import Image
 import filecmp
 import unittest
 import os
+import shutil
+
+def checkCreateOutputFolder(folder):
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
+def removeFolder(folder):
+	if os.path.exists(folder):
+		shutil.rmtree(folder)
 
 def klgtopng():
+    
 	f = open("2017-08-01.00.klg", "rb")
 	byte = f.read(4)
 	a=map(ord,byte)
@@ -28,6 +38,8 @@ def klgtopng():
 	count=0
 	depth=np.ones( (480,640),  dtype=np.uint16)
 	rgb=np.ones((480, 640, 3), dtype=np.uint8)
+
+	numberoffframes = 10 #TOFIX: hack for testing
 	while count<numberofframes:
 	        print count
 		byte = f.read(8)
@@ -60,7 +72,9 @@ def klgtopng():
 	f.close()
 
 if __name__ == '__main__':
-	klgtopng()
-    #deleteExisingOutputFile("UR5pathnew.txt")
-    #ur2ef()
+	#klgtopng()
+	removeFolder("klg2png_output");
+	checkCreateOutputFolder("klg2png_output");
+	checkCreateOutputFolder("klg2png_output/depth_aug/");
+	checkCreateOutputFolder("klg2png_output/rgb_aug/");
     #unittest.main()
