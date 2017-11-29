@@ -26,6 +26,10 @@ class TestKLGParser(unittest.TestCase):
         file1 = "klg2png_output/depth_aug/depth_aug0.png"
         file2 = "output_test/depth_aug0.png"
         self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
+    def testRGBOutput(self):
+        file1 = "klg2png_output/rgb_aug/rgb_aug0.png"
+        file2 = "output_test/rgb_aug0.png"
+        self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
 
 def checkCreateOutputFolder(folder):
     if not os.path.exists(folder):
@@ -72,7 +76,7 @@ def klgtopng():
         #print timage.shape
         if(count%37==0): 
             timage = np.fromstring(byte, dtype=np.uint8)
-            gb=cv2.imdecode(timage,1)
+            rgb=cv2.imdecode(timage,1)
             cname="klg2png_output/rgb_aug/rgb_aug"+str(count)+".png"
             cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
         count+=1
@@ -84,4 +88,4 @@ if __name__ == '__main__':
     checkCreateOutputFolder("klg2png_output/depth_aug/");
     checkCreateOutputFolder("klg2png_output/rgb_aug/");
     klgtopng()
-    #unittest.main()
+    unittest.main()
