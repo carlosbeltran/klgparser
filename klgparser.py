@@ -212,25 +212,51 @@ def Test():
 
     unittest.TextTestRunner(verbosity=2).run(suite)
 
+def printUse():
+    print 'klgparser.py -i <inputfile> -o <outputfile> -s <startframe> -e <endframe>'
+    print 'klgparser.py --ifile <inputfile> --ofile <outputfile> --fstar <startframe --fend <endframe>'
+
 def main(argv):
-    Test()
-    #inputfile = ''
-    #outputfile = ''
-    #try:
-    #   opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
-    #except getopt.GetoptError:
-    #   print 'test.py -i <inputfile> -o <outputfile>'
-    #   sys.exit(2)
-    #for opt, arg in opts:
-    #   if opt == '-h':
-    #      print 'test.py -i <inputfile> -o <outputfile>'
-    #      sys.exit()
-    #   elif opt in ("-i", "--ifile"):
-    #      inputfile = arg
-    #   elif opt in ("-o", "--ofile"):
-    #      outputfile = arg
-    #print 'Input file is "', inputfile
-    #print 'Output file is "', outputfile
+
+    inputfile  = ''
+    outputfile = ''
+    fstart     = ''
+    fend       = ''
+
+    try:
+       opts, args = getopt.getopt(argv,"hti:o:s:e:",["ifile=","ofile=","fstart=","fend="])
+    except getopt.GetoptError:
+       pringUse()
+       sys.exit(2)
+    for opt, arg in opts:
+       if opt == '-h':
+          printUse()
+          sys.exit()
+       elif opt == '-t':
+          print 'Testing'
+          Test()
+          sys.exit()
+       elif opt in ("-i", "--ifile"):
+          inputfile = arg
+       elif opt in ("-o", "--ofile"):
+          outputfile = arg
+       elif opt in ("-s", "--fstart"):
+          fstart = arg
+       elif opt in ("-e", "--fend"):
+          fend = arg
+    
+    if not inputfile  or \
+       not outputfile or \
+       not fstart      or \
+       not fend:
+        printUse()
+        sys.exit()
+
+    print "Converting file"
+    klg2klg(inputfile,outputfile,int(fstart),int(fend))
+    removeFolder("finaltest");
+    checkCreateOutputFolder("finaltest")
+    klg2png(outputfile,0,int(fend)-int(fstart),"finaltest/")
 
 if __name__ == "__main__":
    main(sys.argv[1:])   
