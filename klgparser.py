@@ -142,7 +142,7 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe):
 
     while count < lastframe:
 
-        print count
+        #print count
 
         #reading timestamp
         byte = f.read(8)
@@ -226,7 +226,7 @@ def main(argv):
     try:
        opts, args = getopt.getopt(argv,"hti:o:s:e:",["ifile=","ofile=","fstart=","fend="])
     except getopt.GetoptError:
-       pringUse()
+       printUse()
        sys.exit(2)
     for opt, arg in opts:
        if opt == '-h':
@@ -254,9 +254,10 @@ def main(argv):
 
     print "Converting file"
     klg2klg(inputfile,outputfile,int(fstart),int(fend))
-    removeFolder("finaltest");
-    checkCreateOutputFolder("finaltest")
-    klg2png(outputfile,0,int(fend)-int(fstart),"finaltest/")
+    print "Done"
+    #removeFolder("finaltest");
+    #checkCreateOutputFolder("finaltest")
+    #klg2png(outputfile,0,int(fend)-int(fstart),"finaltest/")
 
 if __name__ == "__main__":
    main(sys.argv[1:])   
