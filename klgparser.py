@@ -47,7 +47,7 @@ def removeFolder(folder):
     if os.path.exists(folder):
         shutil.rmtree(folder)
 
-def klgtopng():
+def klgtopng(firstframe,lastframe):
     
     f = open("outklg.klg", "rb")
 
@@ -62,7 +62,7 @@ def klgtopng():
     depth = np.ones( (480,640),   dtype=np.uint16)
     rgb   = np.ones( (480,640,3), dtype=np.uint8)
 
-    numberofframes = 10 #TOFIX: hack for testing
+    #numberofframes = 10 #TOFIX: hack for testing
 
     while count<numberofframes:
 
@@ -84,36 +84,42 @@ def klgtopng():
 
         #extracting depth image
         byte = f.read(depthsize)
-        dimage=zlib.decompress(byte)
-        a=map(ord,dimage)
-        for i in range(len(a)-1):
-            depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
-        dname="klg2png_output/depth_aug/depth_aug"+str(count)+".png"
-        cv2.imwrite(dname,depth)
+        if count >= firstframe and count < lastframe: 
+            dimage=zlib.decompress(byte)
+            a=map(ord,dimage)
+            for i in range(len(a)-1):
+                depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
+            dname="klg2png_output/depth_aug/depth_aug"+str(count)+".png"
+            cv2.imwrite(dname,depth)
 
-        #extracting rgb image
+            #extracting rgb image
         byte = f.read(imagesize)
-        timage = np.fromstring(byte, dtype=np.uint8)
-        rgb=cv2.imdecode(timage,1)
-        cname="klg2png_output/rgb_aug/rgb_aug"+str(count)+".png"
-        cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+        if count >= firstframe and count < lastframe: 
+            timage = np.fromstring(byte, dtype=np.uint8)
+            rgb=cv2.imdecode(timage,1)
+            cname="klg2png_output/rgb_aug/rgb_aug"+str(count)+".png"
+            cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
 
         count+=1
 
     f.close()
 
-def extractFrames():
+def extractFrames(firstframe,lastframe):
 
     f    = open("2017-08-01.00.klg", "rb")
     fout = open("outklg.klg", "wb")
+
 
     # extract number of frames (32 bits)
     byte = f.read(4)
     a=map(ord,byte)
     numberofframes= a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
+    dstnumofframes = lastframe - firstframe;
+    dstnumofframes = np.uint32(dstnumofframes);
+    
     # save to output file
-    fout.write(byte);
+    fout.write(dstnumofframes);
 
     count=0
 
@@ -162,6 +168,6 @@ if __name__ == '__main__':
     checkCreateOutputFolder("klg2png_output");
     checkCreateOutputFolder("klg2png_output/depth_aug/");
     checkCreateOutputFolder("klg2png_output/rgb_aug/");
-    extractFrames()
-    klgtopng()
+    extractFrames(0,10)
+    klgtopng(0,10)
     unittest.main()
