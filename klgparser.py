@@ -22,21 +22,24 @@ import os
 import shutil
 
 class TestKLGParser(unittest.TestCase):
+    def __init__(self, testName, outputfolder):
+            super(TestKLGParser, self).__init__(testName) 
+            self.outputfolder = outputfolder
     def testDepthOutput(self):
-        outputfolder = "klg2png_output/depth_aug/" 
+        _outputfolder = self.outputfolder + "depth_aug/" 
         testfolder   = "output_test/"
         for indx in range(10):
             filename = "depth_aug" + str(indx) +".png"
-            file1 = outputfolder + filename
-            file2 = testfolder   + filename
+            file1 = _outputfolder + filename
+            file2 = testfolder    + filename
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
     def testRGBOutput(self):
-        outputfolder = "klg2png_output/rgb_aug/"
+        _outputfolder = self.outputfolder + "rgb_aug/"
         testfolder   = "output_test/"
         for indx in range(10):
             filename = "rgb_aug" + str(indx) + ".png"
-            file1 = outputfolder + filename
-            file2 = testfolder   + filename
+            file1 = _outputfolder + filename
+            file2 = testfolder    + filename
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
 
 def checkCreateOutputFolder(folder):
@@ -175,4 +178,9 @@ if __name__ == '__main__':
     checkCreateOutputFolder("klg2png_output/rgb_aug/");
     extractFrames(0,10)
     klgtopng(0,10)
-    unittest.main()
+    #unittest.main("klg2png_output/")
+    # call your test
+    suite = unittest.TestSuite()
+    suite.addTest(TestKLGParser('testDepthOutput', "klg2png_output/"))
+    suite.addTest(TestKLGParser('testRGBOutput',   "klg2png_output/"))
+    unittest.TextTestRunner(verbosity=2).run(suite)
