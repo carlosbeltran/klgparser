@@ -64,7 +64,7 @@ def klgtopng(firstframe,lastframe):
 
     #numberofframes = 10 #TOFIX: hack for testing
 
-    while count<numberofframes:
+    while count < lastframe:
 
         print count
 
@@ -127,36 +127,41 @@ def extractFrames(firstframe,lastframe):
     depth = np.ones( (480,640),   dtype=np.uint16)
     rgb   = np.ones( (480,640,3), dtype=np.uint8)
 
-    numberofframes = 10 #TOFIX: hack for testing
+    #numberofframes = 10 #TOFIX: hack for testing
 
-    while count<numberofframes:
+    while count < lastframe:
 
         print count
 
         #reading timestamp
         byte = f.read(8)
         a=map(ord,byte)
-        fout.write(byte)
+        if count >= firstframe and count < lastframe: 
+            fout.write(byte)
 
         #reading depthsize
         byte = f.read(4)
-        fout.write(byte)
+        if count >= firstframe and count < lastframe: 
+            fout.write(byte)
         a=map(ord,byte)
         depthsize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
         #reading imagesize
         byte = f.read(4)
-        fout.write(byte)
+        if count >= firstframe and count < lastframe: 
+            fout.write(byte)
         a=map(ord,byte)
         imagesize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
         #extracting depth image
         byte = f.read(depthsize)
-        fout.write(byte)
+        if count >= firstframe and count < lastframe: 
+            fout.write(byte)
 
         #extracting rgb image
         byte = f.read(imagesize)
-        fout.write(byte)
+        if count >= firstframe and count < lastframe: 
+            fout.write(byte)
 
         count+=1
 
