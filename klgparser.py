@@ -125,6 +125,7 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe):
     byte = f.read(4)
     a=map(ord,byte)
     numberofframes= a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
+    print "Original number of frames = ", numberofframes
 
     dstnumofframes = lastframe - firstframe;
     dstnumofframes = np.uint32(dstnumofframes);
