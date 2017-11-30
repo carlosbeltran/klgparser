@@ -22,24 +22,25 @@ import os
 import shutil
 
 class TestKLGParser(unittest.TestCase):
-    def __init__(self, testName, outputfolder):
+    def __init__(self, testName, outputfolder, testfolder):
             super(TestKLGParser, self).__init__(testName) 
             self.outputfolder = outputfolder
+            self.testfolder   = testfolder
     def testDepthOutput(self):
         _outputfolder = self.outputfolder + "depth_aug/" 
-        testfolder   = "output_test/"
+        _testfolder   = self.testfolder
         for indx in range(10):
             filename = "depth_aug" + str(indx) +".png"
             file1 = _outputfolder + filename
-            file2 = testfolder    + filename
+            file2 = _testfolder    + filename
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
     def testRGBOutput(self):
         _outputfolder = self.outputfolder + "rgb_aug/"
-        testfolder   = "output_test/"
+        _testfolder   = self.testfolder
         for indx in range(10):
             filename = "rgb_aug" + str(indx) + ".png"
             file1 = _outputfolder + filename
-            file2 = testfolder    + filename
+            file2 = _testfolder   + filename
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
 
 def checkCreateOutputFolder(folder):
@@ -50,9 +51,9 @@ def removeFolder(folder):
     if os.path.exists(folder):
         shutil.rmtree(folder)
 
-def klgtopng(firstframe,lastframe):
+def klgtopng(inputfile,firstframe,lastframe):
     
-    f = open("outklg.klg", "rb")
+    f = open(inputfile, "rb")
 
     # extract number of frames (32 bits)
     byte = f.read(4)
@@ -107,11 +108,11 @@ def klgtopng(firstframe,lastframe):
 
     f.close()
 
-def extractFrames(firstframe,lastframe):
+def extractFrames(inputfile,outputfile,firstframe,lastframe):
 
-    f    = open("2017-08-01.00.klg", "rb")
-    fout = open("outklg.klg", "wb")
 
+    f    = open(inputfile, "rb")
+    fout = open(outputfile, "wb")
 
     # extract number of frames (32 bits)
     byte = f.read(4)
@@ -172,15 +173,24 @@ def extractFrames(firstframe,lastframe):
     
 
 if __name__ == '__main__':
-    removeFolder("klg2png_output");
-    checkCreateOutputFolder("klg2png_output");
-    checkCreateOutputFolder("klg2png_output/depth_aug/");
-    checkCreateOutputFolder("klg2png_output/rgb_aug/");
-    extractFrames(0,10)
-    klgtopng(0,10)
-    #unittest.main("klg2png_output/")
-    # call your test
+
+    dstimgfolder  = "klg2png_output/"
+    imgtestfolder = "output_test/"
+
+    # Preparing the environment
+    removeFolder(dstimgfolder);
+    checkCreateOutputFolder(dstimgfolder)
+    depthfolder = dstimgfolder + "depth_aug/"
+    checkCreateOutputFolder(depthfolder)
+    rgbfolder = dstimgfolder + "rgb_aug/"
+    checkCreateOutputFolder(rgbfolder)
+
+    # Actuating algorihtms
+    extractFrames("2017-08-01.00.klg","outklg.klg",0,10)
+    klgtopng("outklg.klg",0,10)
+
+    # calling tests
     suite = unittest.TestSuite()
-    suite.addTest(TestKLGParser('testDepthOutput', "klg2png_output/"))
-    suite.addTest(TestKLGParser('testRGBOutput',   "klg2png_output/"))
+    suite.addTest(TestKLGParser('testDepthOutput', dstimgfolder, imgtestfolder))
+    suite.addTest(TestKLGParser('testRGBOutput',   dstimgfolder, imgtestfolder))
     unittest.TextTestRunner(verbosity=2).run(suite)
