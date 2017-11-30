@@ -22,25 +22,32 @@ import os
 import shutil
 
 class TestKLGParser(unittest.TestCase):
-    def __init__(self, testName, outputfolder, testfolder):
+    def __init__(self, testName, outputfolder, testfolder, framesrange):
             super(TestKLGParser, self).__init__(testName) 
             self.outputfolder = outputfolder
             self.testfolder   = testfolder
+            self.framesrange  = framesrange
     def testDepthOutput(self):
         _outputfolder = self.outputfolder
         _testfolder   = self.testfolder
-        for indx in range(10):
-            filename = "depth_aug" + str(indx) +".png"
+        testindx = 0 #Test index always starts at 0
+        for indx in self.framesrange:
+            filename     = "depth_aug" + str(indx) +".png"
+            filenametest = "depth_aug" + str(testindx) +".png"
+            testindx+=1;
             file1 = _outputfolder + filename
-            file2 = _testfolder    + filename
+            file2 = _testfolder   + filenametest
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
     def testRGBOutput(self):
         _outputfolder = self.outputfolder
         _testfolder   = self.testfolder
-        for indx in range(10):
-            filename = "rgb_aug" + str(indx) + ".png"
+        testindx = 0 #Test index always starts at 0
+        for indx in self.framesrange:
+            filename     = "rgb_aug" + str(indx) + ".png"
+            filenametest = "rgb_aug" + str(testindx) + ".png"
+            testindx+=1;
             file1 = _outputfolder + filename
-            file2 = _testfolder   + filename
+            file2 = _testfolder   + filenametest
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
 
 def checkCreateOutputFolder(folder):
@@ -51,7 +58,7 @@ def removeFolder(folder):
     if os.path.exists(folder):
         shutil.rmtree(folder)
 
-def klgtopng(inputfile,firstframe,lastframe, outputfolder):
+def klg2png(inputfile,firstframe,lastframe, outputfolder):
     
     f = open(inputfile, "rb")
 
@@ -108,8 +115,7 @@ def klgtopng(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def extractFrames(inputfile,outputfile,firstframe,lastframe):
-
+def klg2klg(inputfile,outputfile,firstframe,lastframe):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -174,19 +180,34 @@ def extractFrames(inputfile,outputfile,firstframe,lastframe):
 
 if __name__ == '__main__':
 
-    dstimgfolder  = "klg2png_output/"
-    imgtestfolder = "output_test/"
+    klg2png_output      = "klg2png_output/"
+    klg2png_output_test = "output_test/"
+
+    dynfolder     = "dyn_output/"
+    dyntestfolder = "dyn_test/"
 
     # Preparing the environment
-    removeFolder(dstimgfolder);
-    checkCreateOutputFolder(dstimgfolder)
+    removeFolder(klg2png_output);
+    checkCreateOutputFolder(klg2png_output)
+    removeFolder(dyntestfolder);
+    checkCreateOutputFolder(dyntestfolder)
+    removeFolder(dynfolder);
+    checkCreateOutputFolder(dynfolder)
 
-    # Actuating algorihtms
-    extractFrames("2017-08-01.00.klg","outklg.klg",0,10)
-    klgtopng("outklg.klg",0,10,dstimgfolder)
+    # Actuating algorihtms for first 10 frames
+    klg2klg("2017-08-01.00.klg","outklg.klg",0,10)
+    klg2png("outklg.klg",0,10,klg2png_output)
+
+    # Actuating algorihtms for frame interval
+    klg2png("2017-08-01.00.klg",50,60,dynfolder)
+    klg2klg("2017-08-01.00.klg","outklg.klg",50,60)
+    klg2png("outklg.klg",0,10,dyntestfolder)
 
     # calling tests
     suite = unittest.TestSuite()
-    suite.addTest(TestKLGParser('testDepthOutput', dstimgfolder, imgtestfolder))
-    suite.addTest(TestKLGParser('testRGBOutput',   dstimgfolder, imgtestfolder))
+    suite.addTest(TestKLGParser('testDepthOutput', klg2png_output, klg2png_output_test, range(10)))
+    suite.addTest(TestKLGParser('testRGBOutput',   klg2png_output, klg2png_output_test, range(10)))
+    suite.addTest(TestKLGParser('testDepthOutput', dynfolder, dyntestfolder, range(50,60)))
+    suite.addTest(TestKLGParser('testRGBOutput',   dynfolder, dyntestfolder, range(50,60)))
+
     unittest.TextTestRunner(verbosity=2).run(suite)
