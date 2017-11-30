@@ -27,7 +27,7 @@ class TestKLGParser(unittest.TestCase):
             self.outputfolder = outputfolder
             self.testfolder   = testfolder
     def testDepthOutput(self):
-        _outputfolder = self.outputfolder + "depth_aug/" 
+        _outputfolder = self.outputfolder
         _testfolder   = self.testfolder
         for indx in range(10):
             filename = "depth_aug" + str(indx) +".png"
@@ -35,7 +35,7 @@ class TestKLGParser(unittest.TestCase):
             file2 = _testfolder    + filename
             self.assertTrue(filecmp.cmp(file1,file2,shallow=False))
     def testRGBOutput(self):
-        _outputfolder = self.outputfolder + "rgb_aug/"
+        _outputfolder = self.outputfolder
         _testfolder   = self.testfolder
         for indx in range(10):
             filename = "rgb_aug" + str(indx) + ".png"
@@ -51,7 +51,7 @@ def removeFolder(folder):
     if os.path.exists(folder):
         shutil.rmtree(folder)
 
-def klgtopng(inputfile,firstframe,lastframe):
+def klgtopng(inputfile,firstframe,lastframe, outputfolder):
     
     f = open(inputfile, "rb")
 
@@ -93,7 +93,7 @@ def klgtopng(inputfile,firstframe,lastframe):
             a=map(ord,dimage)
             for i in range(len(a)-1):
                 depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
-            dname="klg2png_output/depth_aug/depth_aug"+str(count)+".png"
+            dname= outputfolder + "depth_aug"+str(count)+".png"
             cv2.imwrite(dname,depth)
 
             #extracting rgb image
@@ -101,7 +101,7 @@ def klgtopng(inputfile,firstframe,lastframe):
         if count >= firstframe and count < lastframe: 
             timage = np.fromstring(byte, dtype=np.uint8)
             rgb=cv2.imdecode(timage,1)
-            cname="klg2png_output/rgb_aug/rgb_aug"+str(count)+".png"
+            cname= outputfolder + "rgb_aug"+str(count)+".png"
             cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
 
         count+=1
@@ -180,14 +180,10 @@ if __name__ == '__main__':
     # Preparing the environment
     removeFolder(dstimgfolder);
     checkCreateOutputFolder(dstimgfolder)
-    depthfolder = dstimgfolder + "depth_aug/"
-    checkCreateOutputFolder(depthfolder)
-    rgbfolder = dstimgfolder + "rgb_aug/"
-    checkCreateOutputFolder(rgbfolder)
 
     # Actuating algorihtms
     extractFrames("2017-08-01.00.klg","outklg.klg",0,10)
-    klgtopng("outklg.klg",0,10)
+    klgtopng("outklg.klg",0,10,dstimgfolder)
 
     # calling tests
     suite = unittest.TestSuite()
