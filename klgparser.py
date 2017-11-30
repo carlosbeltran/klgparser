@@ -20,6 +20,7 @@ import filecmp
 import unittest
 import os
 import shutil
+import sys, getopt
 
 class TestKLGParser(unittest.TestCase):
     def __init__(self, testName, outputfolder, testfolder, framesrange):
@@ -176,9 +177,8 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe):
         count+=1
 
     f.close()
-    
 
-if __name__ == '__main__':
+def Test():
 
     klg2png_output      = "klg2png_output/"
     klg2png_output_test = "output_test/"
@@ -211,3 +211,27 @@ if __name__ == '__main__':
     suite.addTest(TestKLGParser('testRGBOutput',   dynfolder, dyntestfolder, range(50,60)))
 
     unittest.TextTestRunner(verbosity=2).run(suite)
+
+def main(argv):
+    Test()
+    #inputfile = ''
+    #outputfile = ''
+    #try:
+    #   opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+    #except getopt.GetoptError:
+    #   print 'test.py -i <inputfile> -o <outputfile>'
+    #   sys.exit(2)
+    #for opt, arg in opts:
+    #   if opt == '-h':
+    #      print 'test.py -i <inputfile> -o <outputfile>'
+    #      sys.exit()
+    #   elif opt in ("-i", "--ifile"):
+    #      inputfile = arg
+    #   elif opt in ("-o", "--ofile"):
+    #      outputfile = arg
+    #print 'Input file is "', inputfile
+    #print 'Output file is "', outputfile
+
+if __name__ == "__main__":
+   main(sys.argv[1:])   
+
