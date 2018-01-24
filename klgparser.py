@@ -116,7 +116,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def klg2klg(inputfile,outputfile,firstframe,lastframe):
+def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=True):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -173,6 +173,24 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe):
         #extracting rgb image
         byte = f.read(imagesize)
         if count >= firstframe and count < lastframe: 
+            if (undistort):
+                timage = np.fromstring(byte, dtype=np.uint8)
+                rgb    = cv2.imdecode(timage,1)
+                cname  = "distorted.png"
+                cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+
+                # copy parameters to arrays
+                #K = np.array([[1755.04324, 0., 650.63], [0, 1754.95349, 545.9389],[0, 0, 1]]) 
+                #d = np.array([.16858, 0.57600, 0, 0, 0]) # just use first two terms 
+                # defauls factory kinect intrinsics
+                K = np.array([[526.37013657, 0., 313.68782938], [0, 526.37013657, 259.01834898],[0, 0, 1]]) 
+                # distorsion found with calibration
+                d = np.array([.2075, -0.3904, 0, 0, 0]) # just use first two terms 
+                h, w = rgb.shape[:2]
+                newcamera, roi = cv2.getOptimalNewCameraMatrix(K, d, (w,h), 0)
+                undist_rgb = cv2.undistort(rgb, K, d, None, newcamera)
+                cname  = "undistorted.png"
+                cv2.imwrite(cname,cv2.cvtColor(undist_rgb, cv2.COLOR_BGR2RGB))
             fout.write(byte)
 
         count+=1
