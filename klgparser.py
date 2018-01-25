@@ -21,6 +21,7 @@ import unittest
 import os
 import shutil
 import sys, getopt
+import bitstring
 
 class TestKLGParser(unittest.TestCase):
     def __init__(self, testName, outputfolder, testfolder, framesrange):
@@ -173,8 +174,6 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
                 cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
 
                 # copy parameters to arrays
-                #K = np.array([[1755.04324, 0., 650.63], [0, 1754.95349, 545.9389],[0, 0, 1]]) 
-                #d = np.array([.16858, 0.57600, 0, 0, 0]) # just use first two terms 
                 # using parameters from the Kinect RBG calibration
                 K = np.array([[528.4692, 0., 313.7945], [0, 524.2487, 263.1390],[0, 0, 1]]) 
                 d = np.array([.2075, -0.3904, 0, 0, 0]) # just use first two terms 
@@ -191,23 +190,28 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
 
                 # may be:
                 jpg = cv2.imencode('.jpg',undist_rgb)[1].tostring()
-                #jpg    = cv2.imencode('.jpg',undist_rgb)[1]
-                #timage = np.tostring(jpg,dtype=np.uint8)
                 #fout.write(jpg)
-                print imagesize
-                print sys.getsizeof(jpg)
+                #print imagesize
+                newsize = sys.getsizeof(jpg)
+                byteimagesize = to_bytes(newsize,4,endianess='big')
+
+            fout.write(bytetimestamp)
+            fout.write(bytedepthsize)
+            fout.write(byteimagesize)
+            fout.write(bytedepth)
+            if (undistort):
+                fout.write(jpg)
             else:
-
-                fout.write(bytetimestamp)
-                fout.write(bytedepthsize)
-                fout.write(byteimagesize)
-                fout.write(bytedepth)
-
                 fout.write(byteimage)
 
         count+=1
 
     f.close()
+
+def to_bytes(n, length, endianess='big'):
+    h = '%x' % n
+    s = ('0'*(len(h) % 2) + h).zfill(length*2).decode('hex')
+    return s if endianess == 'big' else s[::-1]
 
 def Test():
 
