@@ -124,8 +124,7 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
 
     # extract number of frames (32 bits)
     byte = f.read(4)
-    a=map(ord,byte)
-    numberofframes= a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
+    numberofframes = bitstring.BitArray(bytes=byte,length=32).uintle
     print "Original number of frames = ", numberofframes
 
     dstnumofframes = lastframe - firstframe;
@@ -149,16 +148,13 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
         #reading timestamp
         bytetimestamp = f.read(8)
 
-
         #reading depthsize
         bytedepthsize = f.read(4)
-        a=map(ord,bytedepthsize)
-        depthsize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
+        depthsize = bitstring.BitArray(bytes=bytedepthsize,length=32).uintle
 
         #reading imagesize
         byteimagesize = f.read(4)
-        a=map(ord,byteimagesize)
-        imagesize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
+        imagesize = bitstring.BitArray(bytes=byteimagesize,length=32).uintle
 
         #extracting depth image
         bytedepth = f.read(depthsize)
@@ -193,7 +189,9 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
                 #fout.write(jpg)
                 #print imagesize
                 newsize = sys.getsizeof(jpg)
-                byteimagesize = to_bytes(newsize,4,endianess='big')
+                #byteimagesize = to_bytes(newsize,4,endianess='little')
+                #byteimagesize = bitstring.pack('uint:32',newsize)
+                byteimagesize = bitstring.BitStream(uintle=newsize,length=32).hex
 
             fout.write(bytetimestamp)
             fout.write(bytedepthsize)
