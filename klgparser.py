@@ -116,7 +116,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=True):
+def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -146,35 +146,35 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=True):
         #print count
 
         #reading timestamp
-        byte = f.read(8)
-        a=map(ord,byte)
+        bytetimestamp = f.read(8)
+
         if count >= firstframe and count < lastframe: 
-            fout.write(byte)
+            fout.write(bytetimestamp)
 
         #reading depthsize
-        byte = f.read(4)
+        bytedepthsize = f.read(4)
         if count >= firstframe and count < lastframe: 
-            fout.write(byte)
-        a=map(ord,byte)
+            fout.write(bytedepthsize)
+        a=map(ord,bytedepthsize)
         depthsize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
         #reading imagesize
-        byte = f.read(4)
+        byteimagesize = f.read(4)
         if count >= firstframe and count < lastframe: 
-            fout.write(byte)
-        a=map(ord,byte)
+            fout.write(byteimagesize)
+        a=map(ord,byteimagesize)
         imagesize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
         #extracting depth image
-        byte = f.read(depthsize)
+        bytedepth = f.read(depthsize)
         if count >= firstframe and count < lastframe: 
-            fout.write(byte)
+            fout.write(bytedepth)
 
         #extracting rgb image
-        byte = f.read(imagesize)
+        byteimage = f.read(imagesize)
         if count >= firstframe and count < lastframe: 
             if (undistort):
-                timage = np.fromstring(byte, dtype=np.uint8)
+                timage = np.fromstring(byteimage, dtype=np.uint8)
                 rgb    = cv2.imdecode(timage,1)
                 cname  = "distorted.png"
                 cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
@@ -182,16 +182,29 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=True):
                 # copy parameters to arrays
                 #K = np.array([[1755.04324, 0., 650.63], [0, 1754.95349, 545.9389],[0, 0, 1]]) 
                 #d = np.array([.16858, 0.57600, 0, 0, 0]) # just use first two terms 
-                # defauls factory kinect intrinsics
-                K = np.array([[526.37013657, 0., 313.68782938], [0, 526.37013657, 259.01834898],[0, 0, 1]]) 
-                # distorsion found with calibration
+                # using parameters from the Kinect RBG calibration
+                K = np.array([[528.4692, 0., 313.7945], [0, 524.2487, 263.1390],[0, 0, 1]]) 
                 d = np.array([.2075, -0.3904, 0, 0, 0]) # just use first two terms 
                 h, w = rgb.shape[:2]
                 newcamera, roi = cv2.getOptimalNewCameraMatrix(K, d, (w,h), 0)
-                undist_rgb = cv2.undistort(rgb, K, d, None, newcamera)
+                undist_rgb     = cv2.undistort(rgb, K, d, None, newcamera)
                 cname  = "undistorted.png"
                 cv2.imwrite(cname,cv2.cvtColor(undist_rgb, cv2.COLOR_BGR2RGB))
-            fout.write(byte)
+                
+                # recompres image
+                # parameters from LoggerforURS
+                # int jpeg_params[] = {CV_IMWRITE_JPEG_QUALITY,90,0};
+                # encodedImage = cvEncodeImage(".jpg",img,jpeg_params);
+
+                # may be:
+                jpg = cv2.imencode('.jpg',undist_rgb)[1].tostring()
+                #jpg    = cv2.imencode('.jpg',undist_rgb)[1]
+                #timage = np.tostring(jpg,dtype=np.uint8)
+                #fout.write(jpg)
+                print imagesize
+                print sys.getsizeof(jpg)
+            else:
+                fout.write(byteimage)
 
         count+=1
 
