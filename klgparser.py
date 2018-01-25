@@ -148,30 +148,23 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
         #reading timestamp
         bytetimestamp = f.read(8)
 
-        if count >= firstframe and count < lastframe: 
-            fout.write(bytetimestamp)
 
         #reading depthsize
         bytedepthsize = f.read(4)
-        if count >= firstframe and count < lastframe: 
-            fout.write(bytedepthsize)
         a=map(ord,bytedepthsize)
         depthsize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
         #reading imagesize
         byteimagesize = f.read(4)
-        if count >= firstframe and count < lastframe: 
-            fout.write(byteimagesize)
         a=map(ord,byteimagesize)
         imagesize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
 
         #extracting depth image
         bytedepth = f.read(depthsize)
-        if count >= firstframe and count < lastframe: 
-            fout.write(bytedepth)
 
         #extracting rgb image
         byteimage = f.read(imagesize)
+
         if count >= firstframe and count < lastframe: 
             if (undistort):
                 timage = np.fromstring(byteimage, dtype=np.uint8)
@@ -204,6 +197,12 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
                 print imagesize
                 print sys.getsizeof(jpg)
             else:
+
+                fout.write(bytetimestamp)
+                fout.write(bytedepthsize)
+                fout.write(byteimagesize)
+                fout.write(bytedepth)
+
                 fout.write(byteimage)
 
         count+=1
