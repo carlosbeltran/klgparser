@@ -94,6 +94,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
         byte = f.read(4)
         a=map(ord,byte)
         imagesize = a[3]*256*256*256+a[2]*256*256+a[1]*256+a[0]
+        print imagesize
 
         #extracting depth image
         byte = f.read(depthsize)
@@ -176,22 +177,22 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
                 h, w = rgb.shape[:2]
                 newcamera, roi = cv2.getOptimalNewCameraMatrix(K, d, (w,h), 0)
                 undist_rgb     = cv2.undistort(rgb, K, d, None, newcamera)
-                cname  = "undistorted.png"
-                cv2.imwrite(cname,cv2.cvtColor(undist_rgb, cv2.COLOR_BGR2RGB))
+                #cname  = "undistorted.png"
+                #cv2.imwrite(cname,cv2.cvtColor(undist_rgb, cv2.COLOR_BGR2RGB))
                 
                 # recompres image
                 # parameters from LoggerforURS
                 # int jpeg_params[] = {CV_IMWRITE_JPEG_QUALITY,90,0};
                 # encodedImage = cvEncodeImage(".jpg",img,jpeg_params);
 
-                # may be:
                 jpg = cv2.imencode('.jpg',undist_rgb)[1].tostring()
                 #fout.write(jpg)
                 #print imagesize
-                newsize = sys.getsizeof(jpg)
+                #newsize = sys.getsizeof(jpg)
+                newsize = len(jpg)
                 #byteimagesize = to_bytes(newsize,4,endianess='little')
                 #byteimagesize = bitstring.pack('uint:32',newsize)
-                byteimagesize = bitstring.BitStream(uintle=newsize,length=32).hex
+                byteimagesize = bitstring.BitArray(uintle=newsize,length=32).bytes
 
             fout.write(bytetimestamp)
             fout.write(bytedepthsize)
