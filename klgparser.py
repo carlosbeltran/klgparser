@@ -258,7 +258,7 @@ def main(argv):
     fend       = ''
 
     try:
-       opts, args = getopt.getopt(argv,"hti:o:s:e:",["ifile=","ofile=","fstart=","fend="])
+       opts, args = getopt.getopt(argv,"htpi:o:s:e:",["ifile=","ofile=","fstart=","fend="])
     except getopt.GetoptError:
        printUse()
        sys.exit(2)
@@ -272,6 +272,9 @@ def main(argv):
           sys.exit()
        elif opt in ("-i", "--ifile"):
           inputfile = arg
+       elif opt == '-p':
+          print "Tranforming to png"
+          sys.exit()
        elif opt in ("-o", "--ofile"):
           outputfile = arg
        elif opt in ("-s", "--fstart"):
