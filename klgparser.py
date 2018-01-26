@@ -118,7 +118,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
+def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -127,6 +127,10 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
     byte = f.read(4)
     numberofframes = bitstring.BitArray(bytes=byte,length=32).uintle
     print "Original number of frames = ", numberofframes
+
+    if (lastframe > numberofframes or \
+        lastframe == 0):
+        lastframe = numberofframes
 
     dstnumofframes = lastframe - firstframe;
     dstnumofframes = np.uint32(dstnumofframes);
@@ -165,34 +169,31 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
 
         if count >= firstframe and count < lastframe: 
             if (undistort):
-                timage = np.fromstring(byteimage, dtype=np.uint8)
-                rgb    = cv2.imdecode(timage,1)
-                cname  = "distorted.png"
-                cv2.imwrite(cname,cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
-
                 # copy parameters to arrays
                 # using parameters from the Kinect RBG calibration
                 K = np.array([[528.4692, 0., 313.7945], [0, 524.2487, 263.1390],[0, 0, 1]]) 
                 d = np.array([.2075, -0.3904, 0, 0, 0]) # just use first two terms 
                 h, w = rgb.shape[:2]
                 newcamera, roi = cv2.getOptimalNewCameraMatrix(K, d, (w,h), 0)
-                undist_rgb     = cv2.undistort(rgb, K, d, None, newcamera)
-                #cname  = "undistorted.png"
-                #cv2.imwrite(cname,cv2.cvtColor(undist_rgb, cv2.COLOR_BGR2RGB))
-                
-                # recompres image
-                # parameters from LoggerforURS
-                # int jpeg_params[] = {CV_IMWRITE_JPEG_QUALITY,90,0};
-                # encodedImage = cvEncodeImage(".jpg",img,jpeg_params);
 
-                jpg = cv2.imencode('.jpg',undist_rgb)[1].tostring()
-                #fout.write(jpg)
-                #print imagesize
-                #newsize = sys.getsizeof(jpg)
+                # Undistor depth
+                dimage=zlib.decompress(bytedepth)
+                a=map(ord,dimage)
+                for i in range(len(a)-1):
+                    depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
+                dname= "distorted_depth.png"
+                cv2.imwrite(dname,depth)
+                u_depth  = cv2.undistort(depth, K, d, None, newcamera)
+                dname= "undistorted_depth.png"
+                cv2.imwrite(dname,u_depth)
+
+                # Undistort RGB
+                timage  = np.fromstring(byteimage, dtype=np.uint8)
+                rgb     = cv2.imdecode(timage,1)
+                u_rgb   = cv2.undistort(rgb, K, d, None, newcamera)
+                jpg     = cv2.imencode('.jpg',u_rgb)[1].tostring()
                 newsize = len(jpg)
-                #byteimagesize = to_bytes(newsize,4,endianess='little')
-                #byteimagesize = bitstring.pack('uint:32',newsize)
-                byteimagesize = bitstring.BitArray(uintle=newsize,length=32).bytes
+                byteimagesize = np.uint32(newsize)
 
             fout.write(bytetimestamp)
             fout.write(bytedepthsize)
@@ -206,11 +207,6 @@ def klg2klg(inputfile,outputfile,firstframe,lastframe, undistort=False):
         count+=1
 
     f.close()
-
-def to_bytes(n, length, endianess='big'):
-    h = '%x' % n
-    s = ('0'*(len(h) % 2) + h).zfill(length*2).decode('hex')
-    return s if endianess == 'big' else s[::-1]
 
 def Test():
 
@@ -250,6 +246,10 @@ def printUse():
     print 'klgparser.py -i <inputfile> -o <outputfile> -s <startframe> -e <endframe>'
     print 'klgparser.py --ifile <inputfile> --ofile <outputfile> --fstar <startframe --fend <endframe>'
 
+def printUseUndistort():
+    print 'klgparser.py -u -i <inputfile> -o <outputfile>'
+    print 'klgparser.py -u --ifile <inputfile> --ofile <outputfile>'
+
 def main(argv):
 
     inputfile  = ''
@@ -258,7 +258,7 @@ def main(argv):
     fend       = ''
 
     try:
-       opts, args = getopt.getopt(argv,"htpi:o:s:e:",["ifile=","ofile=","fstart=","fend="])
+       opts, args = getopt.getopt(argv,"htpui:o:s:e:",["ifile=","ofile=","fstart=","fend="])
     except getopt.GetoptError:
        printUse()
        sys.exit(2)
@@ -277,6 +277,13 @@ def main(argv):
           sys.exit()
        elif opt in ("-o", "--ofile"):
           outputfile = arg
+       elif opt in '-u':
+          if not inputfile or \
+             not outputfile:
+            printUseUndistort()
+            sys.exit()
+          print "Generating undirstoted klg"
+          sys.exit()
        elif opt in ("-s", "--fstart"):
           fstart = arg
        elif opt in ("-e", "--fend"):
