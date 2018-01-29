@@ -181,11 +181,16 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
                 a=map(ord,dimage)
                 for i in range(len(a)-1):
                     depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
-                dname= "distorted_depth.png"
-                cv2.imwrite(dname,depth)
+                #dname= "distorted_depth.png"
+                #cv2.imwrite(dname,depth)
                 u_depth  = cv2.undistort(depth, K, d, None, newcamera)
-                dname= "undistorted_depth.png"
-                cv2.imwrite(dname,u_depth)
+                #dname= "undistorted_depth.png"
+                #cv2.imwrite(dname,u_depth)
+                #u_bytedepth   = zlib.compress(buffer(u_depth))
+                zlib_encode   = zlib.compressobj(9,zlib.DEFLATED, zlib.MAX_WBITS | 16)
+                u_bytedepth   = zlib_encode.compress(u_depth) + zlib_encode.flush()
+                newsize       = len(u_bytedepth)
+                bytedepthsize = np.uint32(newsize)
 
                 # Undistort RGB
                 timage  = np.fromstring(byteimage, dtype=np.uint8)
@@ -198,10 +203,11 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
             fout.write(bytetimestamp)
             fout.write(bytedepthsize)
             fout.write(byteimagesize)
-            fout.write(bytedepth)
             if (undistort):
+                fout.write(u_bytedepth)
                 fout.write(jpg)
             else:
+                fout.write(bytedepth)
                 fout.write(byteimage)
 
         count+=1
