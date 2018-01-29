@@ -118,7 +118,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
+def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, fstep=1, undistort=False):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -132,7 +132,9 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
         lastframe == 0):
         lastframe = numberofframes
 
-    dstnumofframes = lastframe - firstframe;
+    framesrange = range(firstframe,lastframe,fstep)
+    #dstnumofframes = lastframe - firstframe;
+    dstnumofframes = len(framesrange)
     dstnumofframes = np.uint32(dstnumofframes);
     
     # save to output file
@@ -167,7 +169,8 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
         #extracting rgb image
         byteimage = f.read(imagesize)
 
-        if count >= firstframe and count < lastframe: 
+        #if count >= firstframe and count < lastframe: 
+        if count in framesrange:
             if (undistort):
                 # copy parameters to arrays
                 # using parameters from the Kinect RBG calibration
@@ -257,6 +260,10 @@ def printUseUndistort():
     print 'klgparser.py -u -i <inputfile> -o <outputfile>'
     print 'klgparser.py -u --ifile <inputfile> --ofile <outputfile>'
 
+def printUseDecimation():
+    print 'klgparser.py -i <inputfile> -o <outputfile> -f fstep'
+    print 'klgparser.py --ifile <inputfile> --ofile <outputfile> -f fstep'
+
 def main(argv):
 
     inputfile  = ''
@@ -265,7 +272,7 @@ def main(argv):
     fend       = ''
 
     try:
-       opts, args = getopt.getopt(argv,"htpui:o:s:e:",["ifile=","ofile=","fstart=","fend="])
+       opts, args = getopt.getopt(argv,"htpufi:o:s:e:",["ifile=","ofile=","fstart=","fend="])
     except getopt.GetoptError:
        printUse()
        sys.exit(2)
@@ -295,6 +302,14 @@ def main(argv):
           fstart = arg
        elif opt in ("-e", "--fend"):
           fend = arg
+       elif opt in '-f':
+          if not inputfile or \
+             not outputfile:
+            printUseDecimation()
+            sys.exit()
+          fstep = arg
+          print "Generating decimated klg with frames step:", fstep
+          sys.exit()
     
     if not inputfile  or \
        not outputfile or \
