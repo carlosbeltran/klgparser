@@ -186,9 +186,10 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, undistort=True):
                 u_depth  = cv2.undistort(depth, K, d, None, newcamera)
                 #dname= "undistorted_depth.png"
                 #cv2.imwrite(dname,u_depth)
-                #u_bytedepth   = zlib.compress(buffer(u_depth))
-                zlib_encode   = zlib.compressobj(9,zlib.DEFLATED, zlib.MAX_WBITS | 16)
-                u_bytedepth   = zlib_encode.compress(u_depth) + zlib_encode.flush()
+                u_depth       = np.uint16(u_depth)
+                u_bytedepth   = zlib.compress(u_depth,9)
+                #zlib_encode   = zlib.compressobj(9,zlib.DEFLATED, zlib.MAX_WBITS | 16)
+                #u_bytedepth   = zlib_encode.compress(u_depth) + zlib_encode.flush()
                 newsize       = len(u_bytedepth)
                 bytedepthsize = np.uint32(newsize)
 
