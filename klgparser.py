@@ -118,7 +118,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, fstep=1, undistort=False):
+def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, step=1, undistort=False):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -132,9 +132,10 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, fstep=1, undistort=Fa
         lastframe == 0):
         lastframe = numberofframes
 
-    framesrange = range(firstframe,lastframe,fstep)
+    framesrange = range(firstframe,lastframe,step)
     #dstnumofframes = lastframe - firstframe;
     dstnumofframes = len(framesrange)
+    print "New number of frames = ", numberofframes
     dstnumofframes = np.uint32(dstnumofframes);
     
     # save to output file
@@ -272,7 +273,7 @@ def main(argv):
     fend       = ''
 
     try:
-       opts, args = getopt.getopt(argv,"htpufi:o:s:e:",["ifile=","ofile=","fstart=","fend="])
+       opts, args = getopt.getopt(argv,"htpuf:i:o:s:e:",["ifile=","ofile=","fstart=","fend="])
     except getopt.GetoptError:
        printUse()
        sys.exit(2)
@@ -308,7 +309,8 @@ def main(argv):
             printUseDecimation()
             sys.exit()
           fstep = arg
-          print "Generating decimated klg with frames step:", fstep
+          print ("Generating decimated klg with frames step:" + str(fstep))
+          klg2klg(inputfile,outputfile,step=int(fstep))
           sys.exit()
     
     if not inputfile  or \
