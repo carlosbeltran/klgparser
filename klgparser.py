@@ -99,10 +99,13 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
         #extracting depth image
         byte = f.read(depthsize)
         if count >= firstframe and count < lastframe: 
-            dimage=zlib.decompress(byte)
-            a=map(ord,dimage)
-            for i in range(len(a)-1):
-                depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
+            dimage = zlib.decompress(byte)
+            depth  = np.fromstring(dimage,dtype=np.uint16)
+            depth  = depth.byteswap()
+            depth.shape = (480,640) 
+            #a=map(ord,dimage)
+            #for i in range(len(a)-1):
+            #    depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
             dname= outputfolder + "depth_aug"+str(count)+".png"
             cv2.imwrite(dname,depth)
 
@@ -118,7 +121,7 @@ def klg2png(inputfile,firstframe,lastframe, outputfolder):
 
     f.close()
 
-def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, step=1, undistort=False):
+def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, step=1, undistort=True):
 
     f    = open(inputfile, "rb")
     fout = open(outputfile, "wb")
@@ -180,20 +183,14 @@ def klg2klg(inputfile,outputfile,firstframe=0,lastframe=0, step=1, undistort=Fal
                 h, w = rgb.shape[:2]
                 newcamera, roi = cv2.getOptimalNewCameraMatrix(K, d, (w,h), 0)
 
-                # Undistor depth
-                dimage=zlib.decompress(bytedepth)
-                a=map(ord,dimage)
-                for i in range(len(a)-1):
-                    depth[(i/1280)][(i%1280)/2]=a[i+1]*256+a[i]
-                #dname= "distorted_depth.png"
-                #cv2.imwrite(dname,depth)
+                # Undistort depth
+                dimage = zlib.decompress(bytedepth)
+                depth  = np.fromstring(dimage,dtype=np.uint16)
+                depth  = depth.byteswap()
+                depth.shape = (480,640) 
                 u_depth  = cv2.undistort(depth, K, d, None, newcamera)
-                #dname= "undistorted_depth.png"
-                #cv2.imwrite(dname,u_depth)
-                u_depth       = np.uint16(u_depth)
+                u_depth  = u_depth.byteswap()
                 u_bytedepth   = zlib.compress(u_depth,9)
-                #zlib_encode   = zlib.compressobj(9,zlib.DEFLATED, zlib.MAX_WBITS | 16)
-                #u_bytedepth   = zlib_encode.compress(u_depth) + zlib_encode.flush()
                 newsize       = len(u_bytedepth)
                 bytedepthsize = np.uint32(newsize)
 
